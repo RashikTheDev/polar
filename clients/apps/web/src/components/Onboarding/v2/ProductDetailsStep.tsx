@@ -3,7 +3,7 @@
 import { useAuth } from '@/hooks'
 import * as Sentry from '@sentry/nextjs'
 import { useCreateOrganization } from '@/hooks/queries'
-import { schemas } from '@polar-sh/client'
+import { isValidationError, schemas } from '@polar-sh/client'
 import { Box } from '@polar-sh/orbit/Box'
 import Button from '@polar-sh/ui/components/atoms/Button'
 import Input from '@polar-sh/ui/components/atoms/Input'
@@ -24,6 +24,7 @@ import { AUPBlocker } from './AUPBlocker'
 import { ChipSelect } from './ChipSelect'
 import { useOnboardingData } from './OnboardingContext'
 import { OnboardingShell } from './OnboardingShell'
+import { getOrganizationCreateErrorMessage } from './validation'
 
 const SELLING_CATEGORIES = [
   { name: 'Software / SaaS', prohibited: false },
@@ -165,13 +166,14 @@ export function ProductDetailsStep() {
     })
 
     if (error) {
+      const errorMessage = isValidationError(error.detail)
+        ? getOrganizationCreateErrorMessage(error.detail)
+        : typeof error.detail === 'string'
+          ? error.detail
+          : 'Something went wrong, please try again.'
+
       form.setError('root', {
-        message:
-          typeof error.detail === 'string'
-            ? error.detail
-            : Array.isArray(error.detail)
-              ? (error.detail[0]?.msg ?? 'Validation failed')
-              : 'Something went wrong, please try again.',
+        message: errorMessage,
       })
       showApiResponse(400, 'Failed to create organization')
       return false
