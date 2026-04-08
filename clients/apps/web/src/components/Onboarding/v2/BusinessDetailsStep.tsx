@@ -24,7 +24,6 @@ import { CurrencySelector } from '../../CurrencySelector'
 import { SUPPORTED_PAYOUT_COUNTRIES } from './config/supported-payout-countries'
 import { useOnboardingData } from './OnboardingContext'
 import { OnboardingShell } from './OnboardingShell'
-import { ORGANIZATION_MIN_LENGTH } from './validation'
 
 interface FormSchema {
   organizationType: 'individual' | 'company'
@@ -208,12 +207,13 @@ function CurrencyAndCountryFields() {
 function SubmitButton({ loading }: { loading: boolean }) {
   const orgName = useWatch<FormSchema, 'orgName'>({ name: 'orgName' })
   const orgSlug = useWatch<FormSchema, 'orgSlug'>({ name: 'orgSlug' })
-  const isDisabled =
-    orgName.length < ORGANIZATION_MIN_LENGTH ||
-    orgSlug.length < ORGANIZATION_MIN_LENGTH
-
   return (
-    <Button type="submit" loading={loading} disabled={isDisabled} fullWidth>
+    <Button
+      type="submit"
+      loading={loading}
+      disabled={orgName.length === 0 || orgSlug.length === 0}
+      fullWidth
+    >
       Continue
     </Button>
   )
@@ -325,13 +325,7 @@ export function BusinessDetailsStep() {
             <FormField
               control={form.control}
               name="orgName"
-              rules={{
-                required: 'Organization name is required',
-                minLength: {
-                  value: ORGANIZATION_MIN_LENGTH,
-                  message: `Organization name must be at least ${ORGANIZATION_MIN_LENGTH} characters`,
-                },
-              }}
+              rules={{ required: 'Organization name is required' }}
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Organization Name</FormLabel>
@@ -346,13 +340,7 @@ export function BusinessDetailsStep() {
             <FormField
               control={form.control}
               name="orgSlug"
-              rules={{
-                required: 'Organization slug is required',
-                minLength: {
-                  value: ORGANIZATION_MIN_LENGTH,
-                  message: `Organization slug must be at least ${ORGANIZATION_MIN_LENGTH} characters`,
-                },
-              }}
+              rules={{ required: 'Slug is required' }}
               render={({ field }) => (
                 <FormItem className="w-full">
                   <FormLabel>Organization Slug</FormLabel>
